@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -26,7 +25,7 @@ void main() async {
   await GetStorage.init();
 
   GetStorage loginData = GetStorage();
-  // loginData.remove('user');
+  loginData.remove('user');
   print(loginData.read('user'));
 
   runApp(MaterialApp(
@@ -45,62 +44,12 @@ void main() async {
   ));
 }
 
-class HomeRoute extends StatefulWidget {
-  @override
-  _HomeRouteState createState() => _HomeRouteState();
-}
-
-class _HomeRouteState extends State<MainRoute> {
-  int fixedNavBarIdx = 0;
-
+class HomeRoute extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
     final double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     return Scaffold(
-      // bottomNavigationBar: BottomNavigationBar(
-      //   currentIndex: fixedNavBarIdx,
-      //   onTap: (int index) {
-      //     setState(() {
-      //       this.fixedNavBarIdx = index;
-      //     });
-      //   },
-      //   backgroundColor: Color.fromARGB(255, 43, 43, 43),
-      //   selectedItemColor: Color.fromARGB(255, 240, 105, 105),
-      //   unselectedItemColor: Colors.grey,
-      //   type: BottomNavigationBarType.fixed,
-      //   items: const <BottomNavigationBarItem>[
-      //     BottomNavigationBarItem(
-      //       icon: FaIcon(
-      //         FontAwesomeIcons.book,
-      //         size: 21,
-      //       ),
-      //       label: 'subjects',
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: FaIcon(
-      //         FontAwesomeIcons.peopleGroup,
-      //         size: 21,
-      //       ),
-      //       label: 'tutors',
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.subscriptions),
-      //       label: 'subscription',
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.favorite),
-      //       label: 'favorites',
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: FaIcon(
-      //         FontAwesomeIcons.user,
-      //         size: 21,
-      //       ),
-      //       label: 'profile',
-      //     ),
-      //   ],
-      // ),
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text('priananda'),

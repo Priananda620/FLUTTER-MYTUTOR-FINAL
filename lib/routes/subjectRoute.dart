@@ -82,34 +82,8 @@ class _SubjectRouteState extends State<SubjectRoute> {
 
     return SafeArea(
       child: Scaffold(
-        // appBar: PreferredSize(
-        //     preferredSize: Size.fromHeight(50.0),
-        //     child: AppBar(
-        //       title: Text(
-        //         "Logged In As " + loginData.read("user")["username"],
-        //       ),
-        //       backgroundColor: const Color.fromARGB(255, 42, 49, 72),
-        //       centerTitle: true,
-        //       actions: <Widget>[
-        //         CircleAvatar(
-        //           radius: 30.0,
-        //           backgroundImage: NetworkImage(ENV.address +
-        //               "/CONTINUOUSPROJ/assets/user_images/" +
-        //               loginData.read("user")["username"] +
-        //               "_" +
-        //               loginData.read("user")["user_image"]),
-        //           backgroundColor: Colors.transparent,
-        //         )
-        //       ],
-        //     )),
         body: SingleChildScrollView(
           child: Container(
-            // decoration: const BoxDecoration(
-            //   image: DecorationImage(
-            //     image: AssetImage("assets/images/bulb.jpg"),
-            //     fit: BoxFit.cover,
-            //   ),
-            // ),
             child: Column(children: [
               Container(
                 child: Text(

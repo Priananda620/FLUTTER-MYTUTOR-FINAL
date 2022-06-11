@@ -6,11 +6,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mytutor/models/User.dart';
-import 'package:mytutor/models/Subject.dart';
+// import 'package:mytutor/models/Subject.dart';
+import 'package:mytutor/models/Tutor.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 import 'package:get_storage/get_storage.dart';
 import 'dart:convert';
+import 'package:intl/intl.dart';
 
 import '../ENV.dart';
 
@@ -28,7 +30,10 @@ class TutorRoute extends StatefulWidget {
 class _TutorRouteState extends State<TutorRoute> {
   GetStorage loginData = GetStorage();
 
-  List<Subject> subjectList = <Subject>[];
+  List<Tutor> tutorList = <Tutor>[];
+  DateTime now = DateTime.now();
+  final df = DateFormat('dd/MM/yyyy');
+
   int totalPage = 0;
   int activePage = 0;
   int totalData = 0;
@@ -40,30 +45,30 @@ class _TutorRouteState extends State<TutorRoute> {
   @override
   void initState() {
     super.initState();
-    _loadSubject(1);
+    _loadTutor(1);
   }
 
-  void _loadSubject(int pageReq) {
-    http.post(Uri.parse(ENV.address + "/CONTINUOUSPROJ/api/getSubjects.php"),
+  void _loadTutor(int pageReq) {
+    http.post(Uri.parse(ENV.address + "/CONTINUOUSPROJ/api/getTutors.php"),
         body: {
           'page': pageReq.toString(),
         }).then((response) {
-      var subjectResponse = jsonDecode(response.body);
-      if (response.statusCode == 200 && subjectResponse['success']) {
-        totalPage = subjectResponse["total_page"];
-        activePage = subjectResponse["active_page"];
-        totalData = subjectResponse["total_data"];
+      var tutorResponse = jsonDecode(response.body);
+      if (response.statusCode == 200 && tutorResponse['success']) {
+        totalPage = tutorResponse["total_page"];
+        activePage = tutorResponse["active_page"];
+        totalData = tutorResponse["total_data"];
 
-        var subjectData = subjectResponse['data'];
-        if (subjectData != null) {
-          subjectList = <Subject>[];
+        var tutorData = tutorResponse['data'];
+        if (tutorData != null) {
+          tutorList = <Tutor>[];
 
-          subjectData.forEach((v) {
-            Subject newSubject = Subject.fromJson(v);
-            subjectList.add(newSubject);
-            print(newSubject.name);
+          tutorData.forEach((v) {
+            Tutor newTutor = Tutor.fromJson(v);
+            tutorList.add(newTutor);
+            print(newTutor.email);
           });
-          // print(subjectList.);
+          // print(tutorList.);
           setState(() {});
         }
       } else {
@@ -81,72 +86,8 @@ class _TutorRouteState extends State<TutorRoute> {
 
     return SafeArea(
       child: Scaffold(
-        // bottomNavigationBar: BottomNavigationBar(
-        //   backgroundColor: Color.fromARGB(255, 43, 43, 43),
-        //   selectedItemColor: Color.fromARGB(255, 240, 105, 105),
-        //   unselectedItemColor: Colors.grey,
-        //   type: BottomNavigationBarType.fixed,
-        //   items: const <BottomNavigationBarItem>[
-        //     BottomNavigationBarItem(
-        //       icon: FaIcon(
-        //         FontAwesomeIcons.book,
-        //         size: 21,
-        //         color: Colors.white,
-        //       ),
-        //       label: 'subjects',
-        //     ),
-        //     BottomNavigationBarItem(
-        //       icon: FaIcon(
-        //         FontAwesomeIcons.peopleGroup,
-        //         size: 15,
-        //       ),
-        //       label: 'tutors',
-        //     ),
-        //     BottomNavigationBarItem(
-        //       icon: Icon(Icons.subscriptions),
-        //       label: 'subscription',
-        //     ),
-        //     BottomNavigationBarItem(
-        //       icon: Icon(Icons.favorite),
-        //       label: 'favorites',
-        //     ),
-        //     BottomNavigationBarItem(
-        //       icon: FaIcon(
-        //         FontAwesomeIcons.user,
-        //         size: 21,
-        //       ),
-        //       label: 'profile',
-        //     ),
-        //   ],
-        // ),
-        appBar: PreferredSize(
-            preferredSize: Size.fromHeight(50.0),
-            child: AppBar(
-              title: Text(
-                "_Logged In As " + loginData.read("user")["username"],
-              ),
-              backgroundColor: const Color.fromARGB(255, 42, 49, 72),
-              centerTitle: true,
-              actions: <Widget>[
-                CircleAvatar(
-                  radius: 30.0,
-                  backgroundImage: NetworkImage(ENV.address +
-                      "/CONTINUOUSPROJ/assets/user_images/" +
-                      loginData.read("user")["username"] +
-                      "_" +
-                      loginData.read("user")["user_image"]),
-                  backgroundColor: Colors.transparent,
-                )
-              ],
-            )),
         body: SingleChildScrollView(
           child: Container(
-            // decoration: const BoxDecoration(
-            //   image: DecorationImage(
-            //     image: AssetImage("assets/images/bulb.jpg"),
-            //     fit: BoxFit.cover,
-            //   ),
-            // ),
             child: Column(children: [
               Container(
                 child: Text(
@@ -182,7 +123,7 @@ class _TutorRouteState extends State<TutorRoute> {
                             alignment: Alignment.centerLeft,
                             margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
                             child: const Text(
-                              "Subjects Available",
+                              "Our Tutors",
                               style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w700,
@@ -203,12 +144,12 @@ class _TutorRouteState extends State<TutorRoute> {
                                 // )
                                 ),
                             child: ListView.builder(
-                              itemCount: subjectList.length,
+                              itemCount: tutorList.length,
                               scrollDirection: Axis.horizontal,
                               shrinkWrap: true,
                               itemBuilder: (context, index) {
                                 return Container(
-                                  margin: index == subjectList.length - 1
+                                  margin: index == tutorList.length - 1
                                       ? const EdgeInsets.fromLTRB(0, 0, 0, 0)
                                       : const EdgeInsets.fromLTRB(0, 0, 10, 0),
                                   child: Column(
@@ -216,10 +157,8 @@ class _TutorRouteState extends State<TutorRoute> {
                                       Container(
                                           child: Image.network(
                                             ENV.address +
-                                                "/CONTINUOUSPROJ/assets/courses/" +
-                                                subjectList[index]
-                                                    .id
-                                                    .toString() +
+                                                "/CONTINUOUSPROJ/assets/tutors/" +
+                                                tutorList[index].id.toString() +
                                                 ".jpg",
                                             width: 120,
                                             // height: 130,
@@ -270,7 +209,7 @@ class _TutorRouteState extends State<TutorRoute> {
                                                     const EdgeInsets.fromLTRB(
                                                         0, 0, 0, 12),
                                                 child: Text(
-                                                  subjectList[index]
+                                                  tutorList[index]
                                                       .name
                                                       .toString(),
                                                   style: TextStyle(
@@ -289,10 +228,9 @@ class _TutorRouteState extends State<TutorRoute> {
                                                         255, 64, 64, 64),
                                                     padding: EdgeInsets.all(7),
                                                     child: Text(
-                                                      "RM" +
-                                                          subjectList[index]
-                                                              .price
-                                                              .toString(),
+                                                      tutorList[index]
+                                                          .phone
+                                                          .toString(),
                                                       style: TextStyle(
                                                           fontSize: 14,
                                                           fontWeight:
@@ -307,10 +245,9 @@ class _TutorRouteState extends State<TutorRoute> {
                                                         EdgeInsets.fromLTRB(
                                                             10, 5, 10, 5),
                                                     child: Text(
-                                                      subjectList[index]
-                                                              .sessionsNumber
-                                                              .toString() +
-                                                          " sessions",
+                                                      tutorList[index]
+                                                          .email
+                                                          .toString(),
                                                       style: TextStyle(
                                                           fontSize: 14,
                                                           fontWeight:
@@ -370,20 +307,11 @@ class _TutorRouteState extends State<TutorRoute> {
                                                                 Colors.white),
                                                         children: [
                                                           TextSpan(
-                                                            text: subjectList[
-                                                                    index]
-                                                                .rating
-                                                                .toString(),
-                                                          ),
-                                                          const TextSpan(
-                                                            text: " ",
-                                                          ),
-                                                          const WidgetSpan(
-                                                            child: FaIcon(
-                                                              FontAwesomeIcons
-                                                                  .star,
-                                                              size: 15,
-                                                            ),
+                                                            text: df.format(DateTime
+                                                                .parse(tutorList[
+                                                                        index]
+                                                                    .dateReg
+                                                                    .toString())),
                                                           ),
                                                         ],
                                                       ),
@@ -476,8 +404,7 @@ class _TutorRouteState extends State<TutorRoute> {
                                       : Color.fromARGB(255, 108, 108, 108),
                                   width: 40,
                                   child: TextButton(
-                                      onPressed: () =>
-                                          {_loadSubject(index + 1)},
+                                      onPressed: () => {_loadTutor(index + 1)},
                                       child: Text(
                                         (index + 1).toString(),
                                         style: TextStyle(color: color),

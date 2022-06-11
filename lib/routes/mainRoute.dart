@@ -20,6 +20,7 @@ import 'package:mytutor/routes/tutorRoute.dart';
 class MainRoute extends StatefulWidget {
   @override
   State<MainRoute> createState() => _MainRouteState();
+  // GetStorage loginData = GetStorage();
 
   // MainRoute({
   //   Key? key,
@@ -83,23 +84,23 @@ class _MainRouteState extends State<MainRoute> {
     double screenWidth = MediaQuery.of(context).size.width;
 
     Widget child = SubjectRoute();
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
-      print(loginData.read("user")["username"]);
-      // print(ModalRoute.of(context)?.settings.name);
-      if (fixedNavBarIdx == 0 && currentNav != 0) {
-        // Navigator.pop(context);
-        child = SubjectRoute();
-        print("bbbbbbbbbb");
-        currentNav = 0;
-        setState(() {});
-      } else if (fixedNavBarIdx == 1 && currentNav != 1) {
-        // Navigator.pushNamed(context, "/tutor");
-        child = TutorRoute();
-        print("aaaaaaaaaaa");
-        currentNav = 1;
-        setState(() {});
-      }
-    });
+    // WidgetsBinding.instance?.addPostFrameCallback((_) {
+    print(loginData.read("user")["username"]);
+    // print(ModalRoute.of(context)?.settings.name);
+    if (fixedNavBarIdx == 0 && currentNav != 0) {
+      // Navigator.pop(context);
+      child = SubjectRoute();
+      print("bbbbbbbbbb");
+      currentNav = 0;
+      setState(() {});
+    } else if (fixedNavBarIdx == 1 && currentNav != 1) {
+      // Navigator.pushNamed(context, "/tutor");
+      child = TutorRoute();
+      print("aaaaaaaaaaa");
+      currentNav = 1;
+      setState(() {});
+    }
+    // });
 
     // print(fixedNavBarIdx);
 
