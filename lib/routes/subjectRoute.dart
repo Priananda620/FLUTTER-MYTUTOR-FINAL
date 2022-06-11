@@ -26,7 +26,7 @@ class SubjectRoute extends StatefulWidget {
 }
 
 class _SubjectRouteState extends State<SubjectRoute> {
-  GetStorage loginData = GetStorage();
+  // GetStorage loginData = GetStorage();
 
   List<Subject> subjectList = <Subject>[];
   int totalPage = 0;

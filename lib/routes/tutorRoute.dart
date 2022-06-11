@@ -28,7 +28,7 @@ class TutorRoute extends StatefulWidget {
 }
 
 class _TutorRouteState extends State<TutorRoute> {
-  GetStorage loginData = GetStorage();
+  // GetStorage loginData = GetStorage();
 
   List<Tutor> tutorList = <Tutor>[];
   DateTime now = DateTime.now();
@@ -82,7 +82,7 @@ class _TutorRouteState extends State<TutorRoute> {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
 
-    print(loginData.read("user")["username"]);
+    // print(loginData.read("user")["username"]);
 
     return SafeArea(
       child: Scaffold(

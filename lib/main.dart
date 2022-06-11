@@ -12,7 +12,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 //import 'package:url_launcher/url_launcher.dart';
 
 import 'ENV.dart';
-import 'models/user.dart';
+import 'models/User.dart';
 
 import 'routes/loginRoute.dart';
 import 'routes/registerRoute.dart';
@@ -25,15 +25,18 @@ void main() async {
   await GetStorage.init();
 
   GetStorage loginData = GetStorage();
-  loginData.remove('user');
+  // loginData.remove('user');
   print(loginData.read('user'));
 
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
     initialRoute: '/',
     routes: {
-      '/': (context) =>
-          loginData.read('user') != null ? MainRoute() : HomeRoute(),
+      '/': (context) => loginData.read('user') != null
+          ? MainRoute(
+              userData: User.fromJson(loginData.read("user")),
+            )
+          : HomeRoute(),
       // '/main': (context) => MainRoute(),
       '/login': (context) => LoginRoute(
             loginData: loginData,

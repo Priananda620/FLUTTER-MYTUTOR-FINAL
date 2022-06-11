@@ -18,19 +18,21 @@ import 'package:mytutor/routes/subjectRoute.dart';
 import 'package:mytutor/routes/tutorRoute.dart';
 
 class MainRoute extends StatefulWidget {
+  User userData;
+
   @override
   State<MainRoute> createState() => _MainRouteState();
-  // GetStorage loginData = GetStorage();
 
   // MainRoute({
   //   Key? key,
-  //   required this.loginData,
+  //   required this.userData,
   // }) : super(key: key);
 
+  MainRoute({Key? key, required this.userData}) : super(key: key);
 }
 
 class _MainRouteState extends State<MainRoute> {
-  GetStorage loginData = GetStorage();
+  // GetStorage loginData = GetStorage();
 
   List<Subject> subjectList = <Subject>[];
   int totalPage = 0;
@@ -85,7 +87,7 @@ class _MainRouteState extends State<MainRoute> {
 
     Widget child = SubjectRoute();
     // WidgetsBinding.instance?.addPostFrameCallback((_) {
-    print(loginData.read("user")["username"]);
+    print(widget.userData.username);
     // print(ModalRoute.of(context)?.settings.name);
     if (fixedNavBarIdx == 0 && currentNav != 0) {
       // Navigator.pop(context);
@@ -153,7 +155,7 @@ class _MainRouteState extends State<MainRoute> {
               preferredSize: Size.fromHeight(50.0),
               child: AppBar(
                 title: Text(
-                  "Logged In As " + loginData.read("user")["username"],
+                  "Logged In As " + widget.userData.username.toString(),
                 ),
                 backgroundColor: const Color.fromARGB(255, 42, 49, 72),
                 centerTitle: true,
@@ -162,9 +164,9 @@ class _MainRouteState extends State<MainRoute> {
                     radius: 30.0,
                     backgroundImage: NetworkImage(ENV.address +
                         "/CONTINUOUSPROJ/assets/user_images/" +
-                        loginData.read("user")["username"] +
+                        widget.userData.username.toString() +
                         "_" +
-                        loginData.read("user")["user_image"]),
+                        widget.userData.userImage.toString()),
                     backgroundColor: Colors.transparent,
                   )
                 ],

@@ -8,9 +8,10 @@ import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:mytutor/routes/mainRoute.dart';
+import 'package:restart_app/restart_app.dart';
 
 import '../ENV.dart';
-import '../models/user.dart';
+import '../models/User.dart';
 
 class LoginRoute extends StatelessWidget {
   final TextEditingController _loginEmailController = TextEditingController();
@@ -193,7 +194,7 @@ class LoginRoute extends StatelessWidget {
                     )))));
   }
 
-  void loginAction(context) {
+  void loginAction(context) async {
     String _email = _loginEmailController.text;
     String _pass = _loginPasswordController.text;
 
@@ -251,20 +252,25 @@ class LoginRoute extends StatelessWidget {
             fontSize: 16.0);
 
         User user = User.fromJson(data['account_data']);
+        // User userData = user;
         loginData.write("user", user);
         // loginData.write("username", user.username);
 
         print(loginData.read("user").email);
 
         // Navigator.pushReplacementNamed(context, '/');
-        Navigator.pop(context);
+        // Navigator.pop(context);
         // Navigator.pushAndRemoveUntil(
         //   context,
         //   MaterialPageRoute(builder: (context) => Navigator.),
         //   (Route<dynamic> route) => false,
         // );
-        Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (BuildContext context) => MainRoute()));
+        Restart.restartApp();
+
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (BuildContext context) => MainRoute(
+                  userData: user,
+                )));
       }
     });
   }
