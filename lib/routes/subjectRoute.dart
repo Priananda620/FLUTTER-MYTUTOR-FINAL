@@ -11,6 +11,7 @@ import 'package:mytutor/models/Subject.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:get_storage/get_storage.dart';
 import 'dart:convert';
+import 'dart:async';
 
 import '../ENV.dart';
 
@@ -27,6 +28,8 @@ class SubjectRoute extends StatefulWidget {
 
 class _SubjectRouteState extends State<SubjectRoute> {
   // GetStorage loginData = GetStorage();
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
 
   List<Subject> subjectList = <Subject>[];
   int totalPage = 0;
@@ -34,9 +37,13 @@ class _SubjectRouteState extends State<SubjectRoute> {
   int totalData = 0;
   int fixedNavBarIdx = 0;
 
+  late Subject currentDetails;
+
+  late int currDetailsIdx;
+
   var color;
 
-  final myProducts = List<String>.generate(1000, (i) => 'Product $i');
+  // final myProducts = List<String>.generate(1000, (i) => 'Product $i');
 
   @override
   void initState() {
@@ -44,12 +51,34 @@ class _SubjectRouteState extends State<SubjectRoute> {
     _loadSubject(1);
   }
 
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _debounce?.cancel();
+
+    super.dispose();
+    // super.dispose();
+  }
+
+  Color hexToColor(String code) {
+    return new Color(int.parse(code.substring(1, 7), radix: 16) + 0xFF000000);
+  }
+
   void _loadSubject(int pageReq) {
     http.post(Uri.parse(ENV.address + "/CONTINUOUSPROJ/api/getSubjects.php"),
         body: {
-          'page': pageReq.toString(),
+          "page": pageReq.toString(),
+          "searchstr": _searchController.text != ""
+              ? _searchController.text.toLowerCase()
+              : "",
         }).then((response) {
+      // if (_searchController.text != "") {
+      //   print("=--=-=-=-=-=-=-=-=--=" + _searchController.text);
+      // }
       var subjectResponse = jsonDecode(response.body);
+
+      print(response.body.toString());
+
       if (response.statusCode == 200 && subjectResponse['success']) {
         totalPage = subjectResponse["total_page"];
         activePage = subjectResponse["active_page"];
@@ -62,7 +91,7 @@ class _SubjectRouteState extends State<SubjectRoute> {
           subjectData.forEach((v) {
             Subject newSubject = Subject.fromJson(v);
             subjectList.add(newSubject);
-            print(newSubject.name);
+            // print(newSubject.name);
           });
           // print(subjectList.);
           setState(() {});
@@ -70,6 +99,14 @@ class _SubjectRouteState extends State<SubjectRoute> {
       } else {
         print("NO DATA------");
       }
+    });
+  }
+
+  _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 800), () {
+      print(query);
+      _loadSubject(1);
     });
   }
 
@@ -111,16 +148,59 @@ class _SubjectRouteState extends State<SubjectRoute> {
                     color: Color.fromARGB(255, 43, 47, 64),
                   ),
                   child: Column(children: [
-                    //                                  CRYPTO
+                    TextFormField(
+                      onChanged: (text) {
+                        _onSearchChanged(text);
+                      },
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        labelText: "Search Subjects",
+                        labelStyle: TextStyle(color: hexToColor("#eef5fa")),
+                        prefixIcon: Icon(
+                          Icons.search,
+                          color: hexToColor("#F64C72"),
+                        ),
+                        fillColor: hexToColor("#1d1d1d"),
+                        filled: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                          borderSide: BorderSide(),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                          borderSide: BorderSide(
+                              color: hexToColor("#eef5fa"), width: 1.5),
+                        ),
+                        // enabledBorder: OutlineInputBorder(
+                        //   borderRadius: BorderRadius.circular(10.0),
+                        //   borderSide: BorderSide(
+                        //       color: hexToColor("#eef5fa"), width: 0),
+                        // ),
+                        //fillColor: Colors.green
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'input is null';
+                        }
+                        return null;
+                      },
+                      keyboardType: TextInputType.text,
+                      style: TextStyle(color: hexToColor("#eef5fa")),
+                    ),
                     Container(
+                        margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
                         alignment: Alignment.centerLeft,
                         child: Column(children: [
                           Container(
                             alignment: Alignment.centerLeft,
                             margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-                            child: const Text(
-                              "Subjects Available",
-                              style: TextStyle(
+                            child: Text(
+                              _searchController.text != ""
+                                  ? "search \"" +
+                                      _searchController.text.toString() +
+                                      "\""
+                                  : "subjects available",
+                              style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w700,
                                   color: Colors.white),
@@ -144,253 +224,304 @@ class _SubjectRouteState extends State<SubjectRoute> {
                               scrollDirection: Axis.horizontal,
                               shrinkWrap: true,
                               itemBuilder: (context, index) {
-                                return Container(
-                                  margin: index == subjectList.length - 1
-                                      ? const EdgeInsets.fromLTRB(0, 0, 0, 0)
-                                      : const EdgeInsets.fromLTRB(0, 0, 10, 0),
-                                  child: Column(
-                                    children: [
-                                      Container(
-                                          child: Image.network(
-                                            ENV.address +
-                                                "/CONTINUOUSPROJ/assets/courses/" +
-                                                subjectList[index]
-                                                    .id
-                                                    .toString() +
-                                                ".jpg",
-                                            width: 120,
-                                            // height: 130,
-                                          ),
-                                          padding: const EdgeInsets.all(7),
-                                          margin: const EdgeInsets.fromLTRB(
-                                              0, 0, 0, 10),
-                                          decoration: const BoxDecoration(
-                                              color: Color.fromARGB(
-                                                  255, 233, 233, 233),
-                                              // borderRadius: BorderRadius.only(
-                                              //   topRight: Radius.circular(100),
-                                              //   topLeft: Radius.circular(100),
-                                              //   bottomLeft:
-                                              //       Radius.circular(100),
-                                              //   bottomRight:
-                                              //       Radius.circular(100),
-                                              // ),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Color.fromARGB(
-                                                      50, 46, 46, 46),
-                                                  spreadRadius: 4,
-                                                  blurRadius: 20,
-                                                ),
-                                                BoxShadow(
-                                                  color: Color.fromARGB(
-                                                      20, 40, 40, 40),
-                                                  spreadRadius: -4,
-                                                  blurRadius: 10,
-                                                )
-                                              ])),
-                                      Spacer(),
-                                      Container(
-                                          margin: const EdgeInsets.fromLTRB(
-                                              10, 0, 0, 0),
-                                          alignment: Alignment.centerLeft,
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Container(
-                                                // alignment: Alignment.centerLeft,
-                                                // width: 100,
-                                                margin:
-                                                    const EdgeInsets.fromLTRB(
-                                                        0, 0, 0, 12),
-                                                child: Text(
-                                                  subjectList[index]
-                                                      .name
-                                                      .toString(),
-                                                  style: TextStyle(
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.w700,
-                                                      color: Colors.white),
-                                                ),
+                                return GestureDetector(
+                                    onTap: () {
+                                      currDetailsIdx = index;
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) =>
+                                            _buildPopupDialog(context),
+                                      );
+                                    },
+                                    child: Container(
+                                      margin: index == subjectList.length - 1
+                                          ? const EdgeInsets.fromLTRB(
+                                              0, 0, 0, 0)
+                                          : const EdgeInsets.fromLTRB(
+                                              0, 0, 10, 0),
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                              child: Image.network(
+                                                ENV.address +
+                                                    "/CONTINUOUSPROJ/assets/courses/" +
+                                                    subjectList[index]
+                                                        .id
+                                                        .toString() +
+                                                    ".jpg",
+                                                width: 120,
+                                                // height: 130,
                                               ),
-                                              Container(
-                                                // alignment: Alignment.centerLeft,
-
-                                                child: Row(children: [
-                                                  Container(
-                                                    color: Color.fromARGB(
-                                                        255, 64, 64, 64),
-                                                    padding: EdgeInsets.all(7),
-                                                    child: Text(
-                                                      "RM" +
-                                                          subjectList[index]
-                                                              .price
-                                                              .toString(),
-                                                      style: TextStyle(
-                                                          fontSize: 14,
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                          color: Colors.white),
+                                              padding: const EdgeInsets.all(7),
+                                              margin: const EdgeInsets.fromLTRB(
+                                                  0, 0, 0, 10),
+                                              decoration: const BoxDecoration(
+                                                  color: Color.fromARGB(
+                                                      255, 233, 233, 233),
+                                                  // borderRadius: BorderRadius.only(
+                                                  //   topRight: Radius.circular(100),
+                                                  //   topLeft: Radius.circular(100),
+                                                  //   bottomLeft:
+                                                  //       Radius.circular(100),
+                                                  //   bottomRight:
+                                                  //       Radius.circular(100),
+                                                  // ),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Color.fromARGB(
+                                                          50, 46, 46, 46),
+                                                      spreadRadius: 4,
+                                                      blurRadius: 20,
                                                     ),
-                                                  ),
+                                                    BoxShadow(
+                                                      color: Color.fromARGB(
+                                                          20, 40, 40, 40),
+                                                      spreadRadius: -4,
+                                                      blurRadius: 10,
+                                                    )
+                                                  ])),
+                                          const Spacer(),
+                                          Container(
+                                              margin: const EdgeInsets.fromLTRB(
+                                                  10, 0, 0, 0),
+                                              alignment: Alignment.centerLeft,
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
                                                   Container(
+                                                    // alignment: Alignment.centerLeft,
+                                                    // width: 100,
                                                     margin: const EdgeInsets
-                                                        .fromLTRB(10, 0, 0, 0),
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(
-                                                            10, 5, 10, 5),
+                                                        .fromLTRB(0, 0, 0, 12),
                                                     child: Text(
                                                       subjectList[index]
-                                                              .sessionsNumber
-                                                              .toString() +
-                                                          " sessions",
+                                                          .name
+                                                          .toString(),
                                                       style: TextStyle(
-                                                          fontSize: 14,
+                                                          fontSize: 18,
                                                           fontWeight:
-                                                              FontWeight.normal,
+                                                              FontWeight.w700,
                                                           color: Colors.white),
-                                                    ),
-                                                    decoration: BoxDecoration(
-                                                      color: Color.fromARGB(
-                                                          167, 13, 255, 186),
-                                                      borderRadius:
-                                                          BorderRadius.only(
-                                                        topRight:
-                                                            Radius.circular(10),
-                                                        topLeft:
-                                                            Radius.circular(10),
-                                                        bottomLeft:
-                                                            Radius.circular(10),
-                                                        bottomRight:
-                                                            Radius.circular(10),
-                                                      ),
-                                                      boxShadow: const [
-                                                        BoxShadow(
-                                                          color: Color.fromARGB(
-                                                              50, 46, 46, 46),
-                                                          spreadRadius: 4,
-                                                          blurRadius: 20,
-                                                        ),
-                                                        BoxShadow(
-                                                          color: Color.fromARGB(
-                                                              20, 40, 40, 40),
-                                                          spreadRadius: -4,
-                                                          blurRadius: 10,
-                                                        )
-                                                      ],
-                                                      border: Border.all(
-                                                          color: Color.fromARGB(
-                                                              195,
-                                                              142,
-                                                              218,
-                                                              143),
-                                                          width: 2),
                                                     ),
                                                   ),
                                                   Container(
-                                                    margin: const EdgeInsets
-                                                        .fromLTRB(10, 0, 0, 0),
-                                                    padding: const EdgeInsets
-                                                        .fromLTRB(10, 5, 10, 5),
-                                                    child: RichText(
-                                                      text: TextSpan(
-                                                        style: const TextStyle(
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .normal,
-                                                            color:
-                                                                Colors.white),
-                                                        children: [
-                                                          TextSpan(
-                                                            text: subjectList[
-                                                                    index]
-                                                                .rating
-                                                                .toString(),
-                                                          ),
-                                                          const TextSpan(
-                                                            text: " ",
-                                                          ),
-                                                          const WidgetSpan(
-                                                            child: FaIcon(
-                                                              FontAwesomeIcons
-                                                                  .star,
-                                                              size: 15,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    decoration: BoxDecoration(
-                                                      color: Color.fromARGB(
-                                                          167, 255, 65, 13),
-                                                      borderRadius:
-                                                          BorderRadius.only(
-                                                        topRight:
-                                                            Radius.circular(10),
-                                                        topLeft:
-                                                            Radius.circular(10),
-                                                        bottomLeft:
-                                                            Radius.circular(10),
-                                                        bottomRight:
-                                                            Radius.circular(10),
-                                                      ),
-                                                      boxShadow: const [
-                                                        BoxShadow(
-                                                          color: Color.fromARGB(
-                                                              77, 57, 29, 4),
-                                                          spreadRadius: 4,
-                                                          blurRadius: 20,
+                                                    // alignment: Alignment.centerLeft,
+
+                                                    child: Row(children: [
+                                                      Container(
+                                                        color: Color.fromARGB(
+                                                            255, 64, 64, 64),
+                                                        padding:
+                                                            EdgeInsets.all(7),
+                                                        child: Text(
+                                                          "RM" +
+                                                              subjectList[index]
+                                                                  .price
+                                                                  .toString(),
+                                                          style: TextStyle(
+                                                              fontSize: 14,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .normal,
+                                                              color:
+                                                                  Colors.white),
                                                         ),
-                                                        BoxShadow(
+                                                      ),
+                                                      Container(
+                                                        margin: const EdgeInsets
+                                                                .fromLTRB(
+                                                            10, 0, 0, 0),
+                                                        padding:
+                                                            const EdgeInsets
+                                                                    .fromLTRB(
+                                                                10, 5, 10, 5),
+                                                        child: Text(
+                                                          subjectList[index]
+                                                                  .sessionsNumber
+                                                                  .toString() +
+                                                              " sessions",
+                                                          style: TextStyle(
+                                                              fontSize: 14,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .normal,
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
+                                                        decoration:
+                                                            BoxDecoration(
                                                           color: Color.fromARGB(
-                                                              115, 62, 6, 6),
-                                                          spreadRadius: -4,
-                                                          blurRadius: 10,
-                                                        )
-                                                      ],
-                                                      border: Border.all(
+                                                              167,
+                                                              13,
+                                                              255,
+                                                              186),
+                                                          borderRadius:
+                                                              BorderRadius.only(
+                                                            topRight:
+                                                                Radius.circular(
+                                                                    10),
+                                                            topLeft:
+                                                                Radius.circular(
+                                                                    10),
+                                                            bottomLeft:
+                                                                Radius.circular(
+                                                                    10),
+                                                            bottomRight:
+                                                                Radius.circular(
+                                                                    10),
+                                                          ),
+                                                          boxShadow: const [
+                                                            BoxShadow(
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                      50,
+                                                                      46,
+                                                                      46,
+                                                                      46),
+                                                              spreadRadius: 4,
+                                                              blurRadius: 20,
+                                                            ),
+                                                            BoxShadow(
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                      20,
+                                                                      40,
+                                                                      40,
+                                                                      40),
+                                                              spreadRadius: -4,
+                                                              blurRadius: 10,
+                                                            )
+                                                          ],
+                                                          border: Border.all(
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                      195,
+                                                                      142,
+                                                                      218,
+                                                                      143),
+                                                              width: 2),
+                                                        ),
+                                                      ),
+                                                      Container(
+                                                        margin: const EdgeInsets
+                                                                .fromLTRB(
+                                                            10, 0, 0, 0),
+                                                        padding:
+                                                            const EdgeInsets
+                                                                    .fromLTRB(
+                                                                10, 5, 10, 5),
+                                                        child: RichText(
+                                                          text: TextSpan(
+                                                            style: const TextStyle(
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal,
+                                                                color: Colors
+                                                                    .white),
+                                                            children: [
+                                                              TextSpan(
+                                                                text: subjectList[
+                                                                        index]
+                                                                    .rating
+                                                                    .toString(),
+                                                              ),
+                                                              const TextSpan(
+                                                                text: " ",
+                                                              ),
+                                                              const WidgetSpan(
+                                                                child: FaIcon(
+                                                                  FontAwesomeIcons
+                                                                      .star,
+                                                                  size: 15,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        decoration:
+                                                            BoxDecoration(
                                                           color: Color.fromARGB(
-                                                              199, 239, 72, 0),
-                                                          width: 2),
-                                                    ),
+                                                              167, 255, 65, 13),
+                                                          borderRadius:
+                                                              BorderRadius.only(
+                                                            topRight:
+                                                                Radius.circular(
+                                                                    10),
+                                                            topLeft:
+                                                                Radius.circular(
+                                                                    10),
+                                                            bottomLeft:
+                                                                Radius.circular(
+                                                                    10),
+                                                            bottomRight:
+                                                                Radius.circular(
+                                                                    10),
+                                                          ),
+                                                          boxShadow: const [
+                                                            BoxShadow(
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                      77,
+                                                                      57,
+                                                                      29,
+                                                                      4),
+                                                              spreadRadius: 4,
+                                                              blurRadius: 20,
+                                                            ),
+                                                            BoxShadow(
+                                                              color: Color
+                                                                  .fromARGB(115,
+                                                                      62, 6, 6),
+                                                              spreadRadius: -4,
+                                                              blurRadius: 10,
+                                                            )
+                                                          ],
+                                                          border: Border.all(
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                      199,
+                                                                      239,
+                                                                      72,
+                                                                      0),
+                                                              width: 2),
+                                                        ),
+                                                      )
+                                                    ]),
                                                   )
-                                                ]),
-                                              )
-                                            ],
-                                          )),
-                                    ],
-                                  ),
-                                  padding:
-                                      const EdgeInsets.fromLTRB(15, 20, 15, 20),
-                                  decoration: const BoxDecoration(
-                                      borderRadius: BorderRadius.only(
-                                        topRight: Radius.circular(10),
-                                        topLeft: Radius.circular(10),
-                                        bottomLeft: Radius.circular(10),
-                                        bottomRight: Radius.circular(10),
-                                      ),
-                                      gradient: LinearGradient(
-                                        begin: Alignment.topRight,
-                                        end: Alignment.bottomLeft,
-                                        colors: [
-                                          Color.fromARGB(255, 79, 45, 230),
-                                          Color.fromARGB(255, 0, 24, 204),
+                                                ],
+                                              )),
                                         ],
                                       ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color:
-                                              Color.fromARGB(107, 6, 58, 189),
-                                          spreadRadius: 4,
-                                          blurRadius: 20,
-                                        ),
-                                      ]),
-                                );
+                                      padding: const EdgeInsets.fromLTRB(
+                                          15, 20, 15, 20),
+                                      decoration: const BoxDecoration(
+                                          borderRadius: BorderRadius.only(
+                                            topRight: Radius.circular(10),
+                                            topLeft: Radius.circular(10),
+                                            bottomLeft: Radius.circular(10),
+                                            bottomRight: Radius.circular(10),
+                                          ),
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topRight,
+                                            end: Alignment.bottomLeft,
+                                            colors: [
+                                              Color.fromARGB(255, 79, 45, 230),
+                                              Color.fromARGB(255, 0, 24, 204),
+                                            ],
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Color.fromARGB(
+                                                  107, 6, 58, 189),
+                                              spreadRadius: 4,
+                                              blurRadius: 20,
+                                            ),
+                                          ]),
+                                    ));
                               },
                             ),
                             margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
@@ -544,6 +675,28 @@ class _SubjectRouteState extends State<SubjectRoute> {
           // width: screenWidth,
         ),
       ),
+    );
+  }
+
+  Widget _buildPopupDialog(BuildContext context) {
+    return AlertDialog(
+      title: Text(subjectList[currDetailsIdx].name.toString()),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(subjectList[currDetailsIdx].description.toString()),
+        ],
+      ),
+      actions: <Widget>[
+        FlatButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          textColor: Theme.of(context).primaryColor,
+          child: const Text('Close'),
+        ),
+      ],
     );
   }
 }

@@ -70,7 +70,7 @@ if(empty($email) || empty($password) || $connect->connect_error){
 
         } else {
             if(isset($_COOKIE["user_login"])) {
-                setcookie ("user_login","");
+                setcookie ("user_login","", time() + (86400 * 30), "/");
             }
         }
        

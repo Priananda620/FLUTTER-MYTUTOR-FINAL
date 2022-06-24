@@ -45,40 +45,40 @@ class _MainRouteState extends State<MainRoute> {
 
   final myProducts = List<String>.generate(1000, (i) => 'Product $i');
 
-  @override
-  void initState() {
-    super.initState();
-    _loadSubject(1);
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _loadSubject(1);
+  // }
 
-  void _loadSubject(int pageReq) {
-    http.post(Uri.parse(ENV.address + "/CONTINUOUSPROJ/api/getSubjects.php"),
-        body: {
-          'page': pageReq.toString(),
-        }).then((response) {
-      var subjectResponse = jsonDecode(response.body);
-      if (response.statusCode == 200 && subjectResponse['success']) {
-        totalPage = subjectResponse["total_page"];
-        activePage = subjectResponse["active_page"];
-        totalData = subjectResponse["total_data"];
+  // void _loadSubject(int pageReq) {
+  //   http.post(Uri.parse(ENV.address + "/CONTINUOUSPROJ/api/getSubjects.php"),
+  //       body: {
+  //         'page': pageReq.toString(),
+  //       }).then((response) {
+  //     var subjectResponse = jsonDecode(response.body);
+  //     if (response.statusCode == 200 && subjectResponse['success']) {
+  //       totalPage = subjectResponse["total_page"];
+  //       activePage = subjectResponse["active_page"];
+  //       totalData = subjectResponse["total_data"];
 
-        var subjectData = subjectResponse['data'];
-        if (subjectData != null) {
-          subjectList = <Subject>[];
+  //       var subjectData = subjectResponse['data'];
+  //       if (subjectData != null) {
+  //         subjectList = <Subject>[];
 
-          subjectData.forEach((v) {
-            Subject newSubject = Subject.fromJson(v);
-            subjectList.add(newSubject);
-            print(newSubject.name);
-          });
-          // print(subjectList.);
-          setState(() {});
-        }
-      } else {
-        print("NO DATA------");
-      }
-    });
-  }
+  //         subjectData.forEach((v) {
+  //           Subject newSubject = Subject.fromJson(v);
+  //           subjectList.add(newSubject);
+  //           print(newSubject.name);
+  //         });
+  //         // print(subjectList.);
+  //         setState(() {});
+  //       }
+  //     } else {
+  //       print("NO DATA------");
+  //     }
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -153,23 +153,28 @@ class _MainRouteState extends State<MainRoute> {
           ),
           appBar: PreferredSize(
               preferredSize: Size.fromHeight(50.0),
-              child: AppBar(
-                title: Text(
-                  "Logged In As " + widget.userData.username.toString(),
+              child: Container(
+                decoration: new BoxDecoration(
+                    color: const Color.fromARGB(255, 42, 49, 72)),
+                padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
+                child: AppBar(
+                  title: Text(
+                    widget.userData.username.toString(),
+                  ),
+                  backgroundColor: const Color.fromARGB(255, 42, 49, 72),
+                  centerTitle: true,
+                  actions: <Widget>[
+                    CircleAvatar(
+                      radius: 30.0,
+                      backgroundImage: NetworkImage(ENV.address +
+                          "/CONTINUOUSPROJ/assets/user_images/" +
+                          widget.userData.username.toString() +
+                          "_" +
+                          widget.userData.userImage.toString()),
+                      backgroundColor: Colors.transparent,
+                    )
+                  ],
                 ),
-                backgroundColor: const Color.fromARGB(255, 42, 49, 72),
-                centerTitle: true,
-                actions: <Widget>[
-                  CircleAvatar(
-                    radius: 30.0,
-                    backgroundImage: NetworkImage(ENV.address +
-                        "/CONTINUOUSPROJ/assets/user_images/" +
-                        widget.userData.username.toString() +
-                        "_" +
-                        widget.userData.userImage.toString()),
-                    backgroundColor: Colors.transparent,
-                  )
-                ],
               )),
           body: child),
     );

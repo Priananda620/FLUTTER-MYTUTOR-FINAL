@@ -265,7 +265,7 @@ class LoginRoute extends StatelessWidget {
         //   MaterialPageRoute(builder: (context) => Navigator.),
         //   (Route<dynamic> route) => false,
         // );
-        Restart.restartApp();
+        // Restart.restartApp();
 
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (BuildContext context) => MainRoute(
