@@ -92,8 +92,11 @@ class _CartViewRoute extends State<CartViewRoute> {
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
                           ListTile(
-                            leading: Icon(Icons.check_circle_outline,
-                                color: Colors.cyan, size: 45),
+                            leading: subjectList.length != 0
+                                ? Icon(Icons.check_circle_outline,
+                                    color: Colors.cyan, size: 45)
+                                : Icon(Icons.clear_rounded,
+                                    color: Colors.cyan, size: 45),
                             title: Text(
                               subjectList.length != 0
                                   ? subjectList[index].name.toString()
