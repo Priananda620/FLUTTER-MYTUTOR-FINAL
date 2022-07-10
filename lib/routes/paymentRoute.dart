@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../ENV.dart';
 import '../models/subject.dart';
-import '../models/user.dart';
+import 'package:mytutor/models/User.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class PaymentRoute extends StatefulWidget {
   final User user;
-  final double totalpayable;
+  final int totalpayable;
 
   const PaymentRoute({Key? key, required this.user, required this.totalpayable})
       : super(key: key);
@@ -38,7 +38,9 @@ class _PaymentRouteState extends State<PaymentRoute> {
                     '&name=' +
                     widget.user.username.toString() +
                     '&amount=' +
-                    widget.totalpayable.toString(),
+                    widget.totalpayable.toString() +
+                    '&userId=' +
+                    widget.user.id.toString(),
                 javascriptMode: JavascriptMode.unrestricted,
                 onWebViewCreated: (WebViewController webViewController) {
                   _controller.complete(webViewController);

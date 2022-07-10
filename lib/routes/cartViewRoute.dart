@@ -13,6 +13,8 @@ import 'package:get_storage/get_storage.dart';
 import 'dart:convert';
 import 'dart:async';
 
+import 'package:mytutor/routes/paymentRoute.dart';
+
 import '../ENV.dart';
 
 class CartViewRoute extends StatefulWidget {
@@ -140,7 +142,12 @@ class _CartViewRoute extends State<CartViewRoute> {
       actions: <Widget>[
         FlatButton(
           onPressed: () {
-            Navigator.of(context).pop();
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (BuildContext context) => PaymentRoute(
+                      user: widget.userData,
+                      totalpayable: totalPayable,
+                    )));
+            // Navigator.of(context).pop();
           },
           textColor: Theme.of(context).primaryColor,
           child: const Text('Pay'),

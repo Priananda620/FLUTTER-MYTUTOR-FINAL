@@ -2,15 +2,17 @@
 require_once 'db_config.php';
 
 $connect = new mysqli($db_host,$db_username,$db_password,$db_name);
-$email = $_POST['email'];
-$password = $_POST['password'];
+
 
 
 header('Content-Type: application/json');
 
-if(empty($email) || empty($password) || $connect->connect_error){
-    echo json_encode(array('success' => false, 'no_data' => true, 'authenticated' => false));   
+if(empty($_POST['email']) || empty($_POST['password']) || $connect->connect_error){
+    echo json_encode(array('success' => false, 'no_data' => true, 'authenticated' => false, 'db_connection' => !$connect->connect_error));   
 }else{
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+
     $sql = "SELECT * FROM users WHERE email = '$email'";
     
     $result = $connect->query($sql);
@@ -24,13 +26,13 @@ if(empty($email) || empty($password) || $connect->connect_error){
         $userData = array();
 
         foreach ($results as $iterate) {
-            $userData['userID'] = $iterate['id'];
-            $userData['username'] = $iterate['username'];
-            $userData['email'] = $iterate['email'];
-            $userData['phone'] = $iterate['phone'];
-            $userData['user_image'] = $iterate['user_image'];
-            $userData['hashPass'] = $iterate['hashed_password'];
-            $userData['address'] = $iterate['address'];
+            $userData['userID'] = (string)$iterate['id'];
+            $userData['username'] = (string)$iterate['username'];
+            $userData['email'] = (string)$iterate['email'];
+            $userData['phone'] = (string)$iterate['phone'];
+            $userData['user_image'] = (string)$iterate['user_image'];
+            $userData['hashPass'] = (string)$iterate['hashed_password'];
+            $userData['address'] = (string)$iterate['address'];
         }
 
         if(password_verify($password, $userData['hashPass'])){
@@ -74,7 +76,7 @@ if(empty($email) || empty($password) || $connect->connect_error){
             }
         }
        
-        echo json_encode(array('success' => true, 'remember' => isset($_POST['remember']), 'account_data' => array('username' => $userData['username'], 'userID' => $userData['userID'], 'user_phone' => $userData['phone'], 'user_email' => $userData['email'], 'user_image' => $userData['user_image'], 'user_address' => $userData['address']), 'authenticated' => true));
+        echo json_encode(array('success' => true, 'remember' => isset($_POST['remember']), 'account_data' => array('username' => $userData['username'], 'id' => $userData['userID'], 'user_phone' => $userData['phone'], 'user_email' => $userData['email'], 'user_image' => $userData['user_image'], 'user_address' => $userData['address']), 'authenticated' => true));
     }
     
 }

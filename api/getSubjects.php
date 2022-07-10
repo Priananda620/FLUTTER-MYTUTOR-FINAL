@@ -19,15 +19,42 @@
         $searchStr = $_POST['searchstr'];
         $string = "%" . strtolower(htmlspecialchars(addslashes($searchStr), ENT_QUOTES, 'UTF-8')) . "%";
 
+        $sql = "SELECT
+            *,
+            (
+            CASE 
+                WHEN cart.subject_id IS NULL 
+                    THEN '0'
+                ELSE '1'
+            END
+            ) AS cartIsExist,
+            tbl_subjects.subject_id AS 'subjectId'
+            FROM
+                tbl_subjects
+            LEFT JOIN cart ON tbl_subjects.subject_id = cart.subject_id
+            WHERE LOWER( subject_name ) LIKE ? ".$limit;
 
-        $sql = "SELECT * FROM tbl_subjects WHERE LOWER( subject_name ) LIKE ? ".$limit;
+        // $sql = "SELECT * FROM tbl_subjects LEFT JOIN cart ON tbl_subjects.questionID = cart.user_id WHERE LOWER( subject_name ) LIKE ? ".$limit;
         $stmt = $sqlcnt->prepare($sql);
         $stmt->bind_param("s", $string);
         $stmt->execute();
         $query = $stmt->get_result();
         $total_data = $query->num_rows;
     }else{
-        $sql = "SELECT * FROM tbl_subjects";
+        $sql = "SELECT
+            *,
+            (
+            CASE 
+                WHEN cart.subject_id IS NULL 
+                    THEN '0'
+                ELSE '1'
+            END
+            ) AS cartIsExist,
+            tbl_subjects.subject_id AS 'subjectId'
+            FROM
+                tbl_subjects
+            LEFT JOIN cart ON tbl_subjects.subject_id = cart.subject_id";
+        
         $query = $sqlcnt->query($sql . $limit);
         $total_data = $query->num_rows;
     }
@@ -41,13 +68,14 @@
     if($total_data != 0){
         do {
             $subjectArray = array();
-            $subjectArray['subject_id'] = (string)$row['subject_id'];
+            $subjectArray['subject_id'] = (string)$row['subjectId'];
             $subjectArray['subject_name'] = (string)$row['subject_name'];
             $subjectArray['subject_description'] = (string)$row['subject_description'];
             $subjectArray['subject_price'] = (string)$row['subject_price'];
             $subjectArray['tutor_id'] = (string)$row['tutor_id'];
             $subjectArray['subject_sessions'] = (string)$row['subject_sessions'];
             $subjectArray['subject_rating'] = (string)$row['subject_rating'];
+            $subjectArray['cartIsExist'] = (string)$row['cartIsExist'];
             array_push($subjectFetchStore, $subjectArray);
         } while ($row = $query->fetch_assoc());
     }
@@ -84,5 +112,4 @@
 
     header('Content-Type: application/json');
 
-    echo json_encode($dataResponse); 
-?>
+    echo json_encode($dataResponse);
