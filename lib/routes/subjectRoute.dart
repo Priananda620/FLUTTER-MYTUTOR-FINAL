@@ -16,6 +16,7 @@ import 'dart:async';
 import '../ENV.dart';
 
 class SubjectRoute extends StatefulWidget {
+  User userData;
   @override
   State<SubjectRoute> createState() => _SubjectRouteState();
 
@@ -24,6 +25,7 @@ class SubjectRoute extends StatefulWidget {
   //   required this.loginData,
   // }) : super(key: key);
 
+  SubjectRoute({Key? key, required this.userData}) : super(key: key);
 }
 
 class _SubjectRouteState extends State<SubjectRoute> {
@@ -32,14 +34,13 @@ class _SubjectRouteState extends State<SubjectRoute> {
   Timer? _debounce;
 
   List<Subject> subjectList = <Subject>[];
+
   int totalPage = 0;
   int activePage = 0;
   int totalData = 0;
   int fixedNavBarIdx = 0;
 
-  late Subject currentDetails;
-
-  late int currDetailsIdx;
+  late int currSubjectPressedIdx;
 
   var color;
 
@@ -64,20 +65,52 @@ class _SubjectRouteState extends State<SubjectRoute> {
     return new Color(int.parse(code.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
+  void _addLoadCart(String subjectId, int indexClicked) {
+    http.post(Uri.parse(ENV.address + "/api/cartProcess.php"), body: {
+      "userId": widget.userData.id.toString(),
+      "subjectId": subjectId,
+    }).then((response) {
+      var cartResponse = jsonDecode(response.body);
+
+      print(response.body.toString());
+
+      if (response.statusCode == 200 && cartResponse['success']) {
+        print("added subject with id : " + cartResponse['subject_id']);
+        Fluttertoast.showToast(
+            msg: subjectList[indexClicked].name.toString() + "added to cart",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            fontSize: 16.0);
+        _loadSubject(activePage);
+      } else if (response.statusCode == 200 &&
+          cartResponse['cart_exist'] != null &&
+          cartResponse['cart_exist']) {
+        Fluttertoast.showToast(
+            msg: "already in cart",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            fontSize: 16.0);
+      } else {
+        print(cartResponse);
+      }
+    });
+  }
+
   void _loadSubject(int pageReq) {
-    http.post(Uri.parse(ENV.address + "/CONTINUOUSPROJ/api/getSubjects.php"),
-        body: {
-          "page": pageReq.toString(),
-          "searchstr": _searchController.text != ""
-              ? _searchController.text.toLowerCase()
-              : "",
-        }).then((response) {
+    http.post(Uri.parse(ENV.address + "/api/getSubjects.php"), body: {
+      "page": pageReq.toString(),
+      "searchstr": _searchController.text != ""
+          ? _searchController.text.toLowerCase()
+          : "",
+    }).then((response) {
       // if (_searchController.text != "") {
       //   print("=--=-=-=-=-=-=-=-=--=" + _searchController.text);
       // }
       var subjectResponse = jsonDecode(response.body);
 
-      print(response.body.toString());
+      // print(response.body.toString());
 
       if (response.statusCode == 200 && subjectResponse['success']) {
         totalPage = subjectResponse["total_page"];
@@ -91,7 +124,7 @@ class _SubjectRouteState extends State<SubjectRoute> {
           subjectData.forEach((v) {
             Subject newSubject = Subject.fromJson(v);
             subjectList.add(newSubject);
-            // print(newSubject.name);
+            // print(newSubject.toJson()['cartIsExist']);
           });
           // print(subjectList.);
           setState(() {});
@@ -208,7 +241,7 @@ class _SubjectRouteState extends State<SubjectRoute> {
                           ),
 
                           Container(
-                            height: 270,
+                            height: 300,
                             decoration: const BoxDecoration(
                                 //     border: Border(
                                 //   top: BorderSide(
@@ -226,7 +259,7 @@ class _SubjectRouteState extends State<SubjectRoute> {
                               itemBuilder: (context, index) {
                                 return GestureDetector(
                                     onTap: () {
-                                      currDetailsIdx = index;
+                                      currSubjectPressedIdx = index;
                                       showDialog(
                                         context: context,
                                         builder: (BuildContext context) =>
@@ -242,9 +275,43 @@ class _SubjectRouteState extends State<SubjectRoute> {
                                       child: Column(
                                         children: [
                                           Container(
+                                              width: 250,
+                                              height: 30,
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  currSubjectPressedIdx = index;
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (BuildContext
+                                                            context) =>
+                                                        _buildPopupDialogAddToCart(
+                                                            context),
+                                                  );
+
+                                                  print("Container was tapped" +
+                                                      subjectList[index]
+                                                          .id
+                                                          .toString());
+                                                },
+                                                child: Align(
+                                                  alignment:
+                                                      Alignment.centerRight,
+                                                  child: FaIcon(
+                                                    FontAwesomeIcons.cartPlus,
+                                                    size: 25,
+                                                    color: subjectList[index]
+                                                                .cartIsExist
+                                                                .toString() ==
+                                                            "1"
+                                                        ? Colors.green
+                                                        : Colors.white,
+                                                  ),
+                                                ),
+                                              )),
+                                          Container(
                                               child: Image.network(
                                                 ENV.address +
-                                                    "/CONTINUOUSPROJ/assets/courses/" +
+                                                    "/assets/courses/" +
                                                     subjectList[index]
                                                         .id
                                                         .toString() +
@@ -680,12 +747,12 @@ class _SubjectRouteState extends State<SubjectRoute> {
 
   Widget _buildPopupDialog(BuildContext context) {
     return AlertDialog(
-      title: Text(subjectList[currDetailsIdx].name.toString()),
+      title: Text(subjectList[currSubjectPressedIdx].name.toString()),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(subjectList[currDetailsIdx].description.toString()),
+          Text(subjectList[currSubjectPressedIdx].description.toString()),
         ],
       ),
       actions: <Widget>[
@@ -695,6 +762,39 @@ class _SubjectRouteState extends State<SubjectRoute> {
           },
           textColor: Theme.of(context).primaryColor,
           child: const Text('Close'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPopupDialogAddToCart(BuildContext context) {
+    return AlertDialog(
+      title: Text("Add To Cart"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text("Add \"" +
+              subjectList[currSubjectPressedIdx].name.toString() +
+              "\" To Cart?"),
+        ],
+      ),
+      actions: <Widget>[
+        FlatButton(
+          onPressed: () {
+            _addLoadCart(subjectList[currSubjectPressedIdx].id.toString(),
+                currSubjectPressedIdx);
+            Navigator.of(context).pop();
+          },
+          textColor: Theme.of(context).primaryColor,
+          child: const Text('Add To Cart'),
+        ),
+        FlatButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          textColor: Theme.of(context).primaryColor,
+          child: const Text('Cancel'),
         ),
       ],
     );

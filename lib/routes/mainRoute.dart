@@ -7,6 +7,7 @@ import 'package:mime/mime.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mytutor/models/User.dart';
 import 'package:mytutor/models/Subject.dart';
+import 'package:restart_app/restart_app.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 import 'package:get_storage/get_storage.dart';
@@ -16,6 +17,7 @@ import '../ENV.dart';
 
 import 'package:mytutor/routes/subjectRoute.dart';
 import 'package:mytutor/routes/tutorRoute.dart';
+import 'package:mytutor/routes/cartViewRoute.dart';
 
 class MainRoute extends StatefulWidget {
   User userData;
@@ -32,7 +34,7 @@ class MainRoute extends StatefulWidget {
 }
 
 class _MainRouteState extends State<MainRoute> {
-  // GetStorage loginData = GetStorage();
+  GetStorage loginData = GetStorage();
 
   List<Subject> subjectList = <Subject>[];
   int totalPage = 0;
@@ -40,10 +42,11 @@ class _MainRouteState extends State<MainRoute> {
   int totalData = 0;
   int fixedNavBarIdx = 0;
   int currentNav = 0;
+  int viewCartNav = 0;
 
   var color;
 
-  final myProducts = List<String>.generate(1000, (i) => 'Product $i');
+  // final myProducts = List<String>.generate(1000, (i) => 'Product $i');
 
   // @override
   // void initState() {
@@ -85,13 +88,13 @@ class _MainRouteState extends State<MainRoute> {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
 
-    Widget child = SubjectRoute();
+    Widget child = SubjectRoute(userData: widget.userData);
     // WidgetsBinding.instance?.addPostFrameCallback((_) {
     print(widget.userData.username);
     // print(ModalRoute.of(context)?.settings.name);
     if (fixedNavBarIdx == 0 && currentNav != 0) {
       // Navigator.pop(context);
-      child = SubjectRoute();
+      child = SubjectRoute(userData: widget.userData);
       print("bbbbbbbbbb");
       currentNav = 0;
       setState(() {});
@@ -101,6 +104,13 @@ class _MainRouteState extends State<MainRoute> {
       print("aaaaaaaaaaa");
       currentNav = 1;
       setState(() {});
+    } else if (viewCartNav == 1 && currentNav != 5) {
+      // Navigator.pushNamed(context, "/tutor");
+      child = CartViewRoute(userData: widget.userData);
+      print("cccccccccccc");
+      currentNav = 5;
+      viewCartNav = 0;
+      setState(() {});
     }
     // });
 
@@ -109,9 +119,10 @@ class _MainRouteState extends State<MainRoute> {
     return SafeArea(
       child: Scaffold(
           bottomNavigationBar: BottomNavigationBar(
-            currentIndex: fixedNavBarIdx,
+            currentIndex: fixedNavBarIdx > 1 ? 0 : fixedNavBarIdx,
             onTap: (int index) {
               setState(() {
+                this.currentNav = 0;
                 this.fixedNavBarIdx = index;
               });
             },
@@ -159,15 +170,53 @@ class _MainRouteState extends State<MainRoute> {
                 padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
                 child: AppBar(
                   title: Text(
-                    widget.userData.username.toString(),
+                    currentNav == 5
+                        ? "Cart"
+                        : widget.userData.username.toString(),
                   ),
                   backgroundColor: const Color.fromARGB(255, 42, 49, 72),
                   centerTitle: true,
                   actions: <Widget>[
+                    Container(
+                      margin: EdgeInsets.only(right: 5, left: 5),
+                      child: ElevatedButton(
+                        child: const FaIcon(
+                          FontAwesomeIcons.cartShopping,
+                          size: 25,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            this.viewCartNav = 1;
+                          });
+                          print("CARTT");
+                        },
+                        style: ElevatedButton.styleFrom(
+                            primary: Color.fromARGB(255, 0, 0, 168),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 15, vertical: 10),
+                            textStyle: TextStyle(
+                                fontSize: 25, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                    Container(
+                      child: ElevatedButton(
+                        child: Icon(Icons.logout),
+                        onPressed: () {
+                          logoutAction();
+                        },
+                        style: ElevatedButton.styleFrom(
+                            primary: Color.fromARGB(255, 0, 0, 168),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 15, vertical: 10),
+                            textStyle: TextStyle(
+                                fontSize: 25, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
                     CircleAvatar(
                       radius: 30.0,
                       backgroundImage: NetworkImage(ENV.address +
-                          "/CONTINUOUSPROJ/assets/user_images/" +
+                          "/assets/user_images/" +
                           widget.userData.username.toString() +
                           "_" +
                           widget.userData.userImage.toString()),
@@ -178,5 +227,10 @@ class _MainRouteState extends State<MainRoute> {
               )),
           body: child),
     );
+  }
+
+  void logoutAction() {
+    loginData.remove('user');
+    Restart.restartApp();
   }
 }

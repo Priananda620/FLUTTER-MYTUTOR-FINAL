@@ -15,7 +15,7 @@ class User {
       this.userImage});
 
   User.fromJson(Map<String, dynamic> json) {
-    id = json['userID'];
+    id = json['id'];
     email = json['user_email'];
     username = json['username'];
     phone = json['user_phone'];

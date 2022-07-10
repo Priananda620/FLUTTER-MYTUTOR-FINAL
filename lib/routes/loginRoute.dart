@@ -197,8 +197,8 @@ class LoginRoute extends StatelessWidget {
   void loginAction(context) async {
     String _email = _loginEmailController.text;
     String _pass = _loginPasswordController.text;
-
-    http.post(Uri.parse(ENV.address + "/CONTINUOUSPROJ/api/login.php"),
+    // print("fRFFFESFESF");
+    http.post(Uri.parse(ENV.address + "/api/login.php"),
         body: {"email": _email, "password": _pass}).then((response) {
       print(response.body);
       var data = jsonDecode(response.body);
@@ -255,7 +255,8 @@ class LoginRoute extends StatelessWidget {
         // User userData = user;
         loginData.write("user", user);
         // loginData.write("username", user.username);
-
+        print(data['account_data']);
+        print("_______________________________________");
         print(loginData.read("user").email);
 
         // Navigator.pushReplacementNamed(context, '/');

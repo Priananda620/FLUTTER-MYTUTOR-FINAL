@@ -49,10 +49,9 @@ class _TutorRouteState extends State<TutorRoute> {
   }
 
   void _loadTutor(int pageReq) {
-    http.post(Uri.parse(ENV.address + "/CONTINUOUSPROJ/api/getTutors.php"),
-        body: {
-          'page': pageReq.toString(),
-        }).then((response) {
+    http.post(Uri.parse(ENV.address + "/api/getTutors.php"), body: {
+      'page': pageReq.toString(),
+    }).then((response) {
       var tutorResponse = jsonDecode(response.body);
       if (response.statusCode == 200 && tutorResponse['success']) {
         totalPage = tutorResponse["total_page"];
@@ -157,7 +156,7 @@ class _TutorRouteState extends State<TutorRoute> {
                                       Container(
                                           child: Image.network(
                                             ENV.address +
-                                                "/CONTINUOUSPROJ/assets/tutors/" +
+                                                "/assets/tutors/" +
                                                 tutorList[index].id.toString() +
                                                 ".jpg",
                                             width: 120,

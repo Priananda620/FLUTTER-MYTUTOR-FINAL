@@ -58,6 +58,7 @@ class RegisterRoute extends StatelessWidget {
         // ignore: unnecessary_new
         home: Scaffold(
             resizeToAvoidBottomInset: false,
+            // ignore: unnecessary_new
             body: new SizedBox(
                 height: (screenHeight - keyboardHeight),
                 child: new Container(
@@ -453,16 +454,15 @@ class RegisterRoute extends StatelessWidget {
       // String base64Encoded = base64Encode(_image!.readAsBytesSync());
       // String base64Image = base64Encode(_image!.readAsBytesSync());
       print(base64Image);
-      http.post(Uri.parse(ENV.address + "/CONTINUOUSPROJ/api/register.php"),
-          body: {
-            "email": _email,
-            "username": _username,
-            "phone": _phone,
-            "address": _address,
-            "password": _pass,
-            "verify_pass": _pass2,
-            "user_image64": base64Image,
-          }).then((response) {
+      http.post(Uri.parse(ENV.address + "/api/register.php"), body: {
+        "email": _email,
+        "username": _username,
+        "phone": _phone,
+        "address": _address,
+        "password": _pass,
+        "verify_pass": _pass2,
+        "user_image64": base64Image,
+      }).then((response) {
         print(response.body);
         var data = jsonDecode(response.body);
         if (response.statusCode == 200 &&
@@ -477,7 +477,9 @@ class RegisterRoute extends StatelessWidget {
               timeInSecForIosWeb: 1,
               fontSize: 16.0);
           // Navigator.of(context).pop();
-        } else if (data['no_data'] && !data['success']) {
+        } else if (data['no_data'] != null &&
+            data['no_data'] &&
+            !data['success']) {
           print("222222222222");
           Fluttertoast.showToast(
               msg: "All input fields must be filled",
@@ -485,7 +487,9 @@ class RegisterRoute extends StatelessWidget {
               gravity: ToastGravity.BOTTOM,
               timeInSecForIosWeb: 1,
               fontSize: 16.0);
-        } else if (data['password_verify_unmatch'] && !data['success']) {
+        } else if (data['password_verify_unmatch'] != null &&
+            data['password_verify_unmatch'] &&
+            !data['success']) {
           print("333333333333");
           Fluttertoast.showToast(
               msg: "verify password must be match",
@@ -493,7 +497,9 @@ class RegisterRoute extends StatelessWidget {
               gravity: ToastGravity.BOTTOM,
               timeInSecForIosWeb: 1,
               fontSize: 16.0);
-        } else if (data['password_length_unmatch'] && !data['success']) {
+        } else if (data['password_length_unmatch'] != null &&
+            data['password_length_unmatch'] &&
+            !data['success']) {
           print("44444444444");
           Fluttertoast.showToast(
               msg: "password must be 8 chars minimum",
@@ -501,8 +507,18 @@ class RegisterRoute extends StatelessWidget {
               gravity: ToastGravity.BOTTOM,
               timeInSecForIosWeb: 1,
               fontSize: 16.0);
+        } else if (data['account_exist'] != null &&
+            data['account_exist'] &&
+            !data['success']) {
+          print("5555555555");
+          Fluttertoast.showToast(
+              msg: "email/username already exist",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              fontSize: 16.0);
         } else {
-          print("5555555555555555");
+          print("66666666666");
           Fluttertoast.showToast(
               msg: "fail",
               toastLength: Toast.LENGTH_SHORT,
