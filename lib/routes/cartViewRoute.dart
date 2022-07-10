@@ -25,6 +25,7 @@ class CartViewRoute extends StatefulWidget {
 
 class _CartViewRoute extends State<CartViewRoute> {
   List<Subject> subjectList = <Subject>[];
+  int totalPayable = 0;
 
   @override
   void initState() {
@@ -43,6 +44,8 @@ class _CartViewRoute extends State<CartViewRoute> {
 
       if (response.statusCode == 200 && subjectCartResponse['success']) {
         var subjectData = subjectCartResponse['data'];
+        totalPayable = subjectCartResponse['total_payable'];
+        print(totalPayable);
 
         if (subjectData != null) {
           subjectList = <Subject>[];
@@ -69,7 +72,11 @@ class _CartViewRoute extends State<CartViewRoute> {
     return Scaffold(
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            // Add your onPressed code here!
+            showDialog(
+              context: context,
+              builder: (BuildContext context) =>
+                  _buildPopupDialogCheckout(context),
+            );
           },
           backgroundColor: Colors.red,
           child: const Icon(Icons.payment_rounded),
@@ -116,5 +123,36 @@ class _CartViewRoute extends State<CartViewRoute> {
                     );
                   })),
         ));
+  }
+
+  Widget _buildPopupDialogCheckout(BuildContext context) {
+    return AlertDialog(
+      title: Text("Proceed to Payment?"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text("You will be charged:\nTotal ( RM " +
+              totalPayable.toString() +
+              " )"),
+        ],
+      ),
+      actions: <Widget>[
+        FlatButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          textColor: Theme.of(context).primaryColor,
+          child: const Text('Pay'),
+        ),
+        FlatButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          textColor: Theme.of(context).primaryColor,
+          child: const Text('Cancel'),
+        ),
+      ],
+    );
   }
 }
